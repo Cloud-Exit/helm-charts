@@ -1,0 +1,18 @@
+apiVersion: v2
+name: twenty
+version: 0.1.0
+description: Production-ready Helm chart for Twenty CRM
+maintainers:
+  - name: Cloud Exit
+    email: contact@cloud-exit.com
+type: application
+
+dependencies:
+  - name: valkey
+    version: "^0.5.0"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: redis.enabled, !redis.externalSecretName
+  - name: postgresql
+    version: "^15.5.0"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    condition: postgres.enabled, !postgres.externalSecretName

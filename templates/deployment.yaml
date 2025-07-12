@@ -1,0 +1,90 @@
+# templates/deployment.yaml for Twenty Helm Chart with required Redis and Postgres wiring
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "twenty.fullname" . }}
+  labels:
+    {{- include "twenty.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "twenty.name" . }}
+      app.kubernetes.io/instance: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "twenty.name" . }}
+        app.kubernetes.io/instance: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: twenty
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: RAILS_ENV
+              value: "production"
+            - name: SERVER_URL
+              value: "{{ .Values.serverUrl }}"
+            # Inject REDIS_URL from external secret or dependency
+            {{- if .Values.redis.externalSecretName }}
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.redis.externalSecretName }}
+                  key: {{ .Values.redis.urlKey }}
+            {{- else }}
+            - name: REDIS_URL
+              value: "redis://{{ .Release.Name }}-valkey:6379"
+            {{- end }}
+            # Inject DATABASE_URL from external secret or dependency
+            {{- if .Values.postgres.externalSecretName }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgres.externalSecretName }}
+                  key: {{ .Values.postgres.urlKey }}
+            {{- else }}
+            - name: DATABASE_URL
+              value: "postgresql://{{ .Values.postgresql.auth.username }}:{{ .Values.postgresql.auth.password }}@{{ .Release.Name }}-postgresql:5432/{{ .Values.postgresql.auth.database }}"
+            {{- end }}
+            {{- if eq .Values.storage.type "s3" }}
+            - name: STORAGE_TYPE
+              value: "s3"
+            - name: STORAGE_S3_REGION
+              value: "{{ .Values.storage.s3.region }}"
+            - name: STORAGE_S3_NAME
+              value: "{{ .Values.storage.s3.bucket }}"
+            - name: STORAGE_S3_ENDPOINT
+              value: "{{ .Values.storage.s3.endpoint }}"
+            - name: STORAGE_S3_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.storage.s3.externalSecretName }}
+                  key: {{ .Values.storage.s3.accessKeyIdKey }}
+            - name: STORAGE_S3_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.storage.s3.externalSecretName }}
+                  key: {{ .Values.storage.s3.secretAccessKeyKey }}
+            {{- else }}
+            - name: STORAGE_TYPE
+              value: "local"
+            {{- end }}
+            {{- with .Values.extraEnv }}
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if and (eq .Values.storage.type "local") .Values.storage.local.size }}
+            - name: storage
+              mountPath: /app/storage
+            {{- end }}
+      volumes:
+        {{- if and (eq .Values.storage.type "local") .Values.storage.local.size }}
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "twenty.fullname" . }}-storage
+        {{- end }}
