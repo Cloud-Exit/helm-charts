@@ -13,6 +13,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Extract Chart Version
+        id: chart_version
+        run: |
+          VERSION=$(yq e '.version' Chart.yaml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Set up Helm
         uses: azure/setup-helm@v4
         with:
@@ -44,7 +50,7 @@ jobs:
         run: |
           PACKAGE_NAME=$(ls .cr-release-packages/*.tgz | head -n1)
           oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          oras push ghcr.io/Cloud-Exit/twenty-helm:latest \
+          oras push ghcr.io/${{ github.repository_owner }}/charts/twenty:${{ steps.chart_version.outputs.version }} \
             --artifact-type application/vnd.cncf.helm.chart.v1 \
             $PACKAGE_NAME:application/tar+gzip
 
