@@ -64,16 +64,6 @@ jobs:
               oras push ghcr.io/cloud-exit/charts/${CHART_NAME}:${VERSION} \
                 --artifact-type application/vnd.cncf.helm.chart.v1 \
                 "$chart":application/vnd.cncf.helm.chart.config.v1+yaml
-
-              echo "Checking for GitHub release v$VERSION"
-              if gh release view "v$VERSION" > /dev/null 2>&1; then
-                echo "Release v$VERSION already exists. Skipping."
-              else
-                echo "Creating GitHub release v$VERSION"
-                gh release create "v$VERSION" \
-                  --title "$CHART_NAME v$VERSION" \
-                  --notes "Automated release of $CHART_NAME Helm chart."
-              fi
             fi
           done
         env:

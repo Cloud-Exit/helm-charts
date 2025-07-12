@@ -1,5 +1,5 @@
 apiVersion: v2
-name: twenty
+name: twenty-crm
 version: 0.1.0
 description: Production-ready Helm chart for Twenty CRM
 maintainers:
