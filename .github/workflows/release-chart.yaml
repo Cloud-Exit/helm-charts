@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: helm-chart-package
-          path: ${{ github.workspace }}/.cr-release-packages/*.tgz
+          path: .cr-release-packages
 
       - name: Install oras CLI
         run: |
