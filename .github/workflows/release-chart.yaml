@@ -30,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: helm-chart-package
-          path: .cr-release-packages/*.tgz
+          path: ${{ github.workspace }}/.cr-release-packages/*.tgz
 
       - name: Install oras CLI
         run: |
@@ -44,9 +44,9 @@ jobs:
         run: |
           PACKAGE_NAME=$(ls .cr-release-packages/*.tgz | head -n1)
           oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          oras push ghcr.io/${{ github.repository_owner }}/charts/twenty-helm:latest \
-            $PACKAGE_NAME:application/vnd.cncf.helm.chart.layer.v1.tar+gzip \
-            --config /dev/null:application/vnd.cncf.helm.config.v1+json
+          oras push ghcr.io/Cloud-Exit/twenty-helm:latest \
+            --artifact-type application/vnd.cncf.helm.chart.v1 \
+            $PACKAGE_NAME:application/tar+gzip
 
       - name: Push chart metadata to ArtifactHub using oras
         env:
