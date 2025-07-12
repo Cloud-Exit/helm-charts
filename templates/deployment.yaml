@@ -1,5 +1,6 @@
 # templates/deployment.yaml for Twenty Helm Chart with required Redis and Postgres wiring
 
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
