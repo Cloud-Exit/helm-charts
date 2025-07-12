@@ -20,11 +20,11 @@ jobs:
 
       - name: Lint Helm chart
         run: |
-          helm lint charts/twenty-helm
+          helm lint .
 
       - name: Package Helm chart
         run: |
-          helm package charts/twenty-helm --destination .cr-release-packages
+          helm package . --destination .cr-release-packages
 
       - name: Upload packaged chart artifact
         uses: actions/upload-artifact@v4
