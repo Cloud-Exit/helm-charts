@@ -1,0 +1,6 @@
+# ct.yaml
+chart-dirs:
+  - charts
+chart-repos:
+  - cloud-exit=https://cloud-exit.github.io/helm-charts
+helm-extra-args: --timeout 600s

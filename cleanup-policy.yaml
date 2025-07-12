@@ -1,0 +1,8 @@
+retention:
+  charts:
+    maxVersions: 10
+    minVersions: 3
+    keepPatterns:
+      - "v0.*.*"  # Keep all v0 versions
+  packages:
+    maxAge: 180d  # Delete packages older than 180 days

@@ -1,0 +1,83 @@
+name: Release All Helm Charts
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'charts/**'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  release-charts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+
+      - name: Lint Helm charts/*
+        run: |
+          for chart in charts/*/; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Validating $chart..."
+
+              # Lint the chart
+              helm lint "$chart"
+
+              # Test template rendering
+              helm template test "$chart"
+            fi
+          done
+
+      - name: Set up yq
+        uses: mikefarah/yq@v4
+
+      - name: Set up gh CLI
+        uses: cli/cli-action@v2
+
+      - name: Install oras CLI
+        run: |
+          curl -LO https://github.com/oras-project/oras/releases/download/v1.1.0/oras_1.1.0_linux_amd64.tar.gz
+          tar -xvf oras_1.1.0_linux_amd64.tar.gz oras
+          sudo mv oras /usr/local/bin/
+
+      - name: Build and release all charts
+        run: |
+          for chart in charts/*; do
+            if [ -f "$chart/Chart.yaml" ]; then
+              echo "Processing $chart"
+              CHART_NAME=$(yq e '.name' "$chart/Chart.yaml")
+              VERSION=$(yq e '.version' "$chart/Chart.yaml")
+
+              echo "Fetching dependencies for $CHART_NAME@$VERSION"
+              helm dependency build "$chart"
+
+              echo "Pushing $CHART_NAME@$VERSION to GHCR via oras"
+              oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+              oras push ghcr.io/cloud-exit/charts/${CHART_NAME}:${VERSION} \
+                --artifact-type application/vnd.cncf.helm.chart.v1 \
+                "$chart":application/vnd.cncf.helm.chart.config.v1+yaml
+
+              echo "Checking for GitHub release v$VERSION"
+              if gh release view "v$VERSION" > /dev/null 2>&1; then
+                echo "Release v$VERSION already exists. Skipping."
+              else
+                echo "Creating GitHub release v$VERSION"
+                gh release create "v$VERSION" \
+                  --title "$CHART_NAME v$VERSION" \
+                  --notes "Automated release of $CHART_NAME Helm chart."
+              fi
+            fi
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
