@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'charts/**'
-      - '.github/workflows/release-helm-chart.yml'
 
 jobs:
   lint-test-release:
