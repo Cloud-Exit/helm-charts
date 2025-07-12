@@ -50,7 +50,7 @@ jobs:
         run: |
           PACKAGE_NAME=$(ls .cr-release-packages/*.tgz | head -n1)
           oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          oras push ghcr.io/${{ github.repository_owner }}/charts/twenty:${{ steps.chart_version.outputs.version }} \
+          oras push ghcr.io/cloud-exit/charts/twenty:${{ steps.chart_version.outputs.version }} \
             --artifact-type application/vnd.cncf.helm.chart.v1 \
             $PACKAGE_NAME:application/tar+gzip
 
@@ -59,6 +59,6 @@ jobs:
           AH_PAT: ${{ secrets.ARTIFACTHUB_TOKEN }}
         run: |
           oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
-          oras push ghcr.io/${{ github.repository_owner }}/charts/twenty-helm:artifacthub.io \
+          oras push ghcr.io/cloud-exit/charts/twenty-helm:artifacthub.io \
             --config /dev/null:application/vnd.cncf.artifacthub.config.v1+yaml \
             artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml
