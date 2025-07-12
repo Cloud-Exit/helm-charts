@@ -1,5 +1,7 @@
 # Twenty Helm Chart
 
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/twentycrm-helm)](https://artifacthub.io/packages/search?repo=twentycrm-helm)
+
 This Helm chart deploys **[Twenty](https://github.com/twentyhq/twenty)** in a **production-ready, configurable Kubernetes environment**.
 
 ## Features

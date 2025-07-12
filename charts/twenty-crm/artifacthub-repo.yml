@@ -9,7 +9,7 @@
 # when the hash of the last commit in the branch you set up changes. This does
 # NOT apply to ownership claim operations, which are processed immediately.
 #
-#repositoryID: The ID of the Artifact Hub repository where the packages will be published to (optional, but it enables verified publisher)
-owners: # (optional, used to claim repository ownership)
-  - name: Cloud Exit
+repositoryID: 74fd4a6c-bc27-44fb-b8c2-5c3b1ff62226
+owners:
+  - name: cloud-exit
     email: contact@cloud-exit.com
