@@ -50,6 +50,7 @@ jobs:
 
       - name: Build and release all charts
         run: |
+          mkdir -p .cr-release-packages
           for chart in charts/*; do
             if [ -f "$chart/Chart.yaml" ]; then
               echo "Processing $chart"
@@ -59,11 +60,20 @@ jobs:
               echo "Fetching dependencies for $CHART_NAME@$VERSION"
               helm dependency build "$chart"
 
+              echo "Packaging $CHART_NAME@$VERSION"
+              helm package "$chart" --destination .cr-release-packages
+              PACKAGE_FILE=".cr-release-packages/${CHART_NAME}-${VERSION}.tgz"
+
               echo "Pushing $CHART_NAME@$VERSION to GHCR via oras"
               oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
               oras push ghcr.io/cloud-exit/charts/${CHART_NAME}:${VERSION} \
                 --artifact-type application/vnd.cncf.helm.chart.v1 \
-                "$chart":application/vnd.cncf.helm.chart.config.v1+yaml
+                $PACKAGE_FILE:application/tar+gzip
+
+              oras push \
+                ghcr.io/cloud-exit/charts/${CHART_NAME}:artifacthub.io \
+                --config /dev/null:application/vnd.cncf.artifacthub.config.v1+yaml \
+                $chart/artifacthub-repo.yml:application/vnd.cncf.artifacthub.repository-metadata.layer.v1.yaml
             fi
           done
         env:
