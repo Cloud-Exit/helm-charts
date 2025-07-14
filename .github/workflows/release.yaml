@@ -68,6 +68,7 @@ jobs:
               helm registry login ghcr.io -u ${{ github.actor }} --password-stdin <<< "${{ secrets.GITHUB_TOKEN }}"
               helm push "$PACKAGE_FILE" oci://ghcr.io/cloud-exit/charts
 
+              oras login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
 
               oras push \
                 ghcr.io/cloud-exit/charts/${CHART_NAME}:artifacthub.io \
