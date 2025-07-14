@@ -1,6 +1,6 @@
 apiVersion: v2
 name: twenty-crm
-version: 0.1.0
+version: 0.1.1
 description: Production-ready Helm chart for Twenty CRM
 maintainers:
   - name: Cloud Exit
